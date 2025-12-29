@@ -7,7 +7,9 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import com.example.taskmanager.dto.UpdateTaskRequest;
 import com.example.taskmanager.entities.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +93,29 @@ public class TaskRepository {
         tasks.put(nextId, newTask);
         saveTasks(tasks);
         return newTask;
+    }
+
+    public boolean deleteById(String id) {
+        Map<String, Task> tasks = getTasks();
+        if(!tasks.containsKey(id)) {
+            return false;
+        }
+        tasks.remove(id);
+        saveTasks(tasks);
+        return true;
+    }
+
+    public Optional<Task> updateTaskById(String id, UpdateTaskRequest task) {
+        Map<String, Task> tasks = getTasks();
+        Task currentTask = tasks.get(id);
+
+        if(currentTask == null) {
+            return Optional.empty();
+        }
+        currentTask.setDescription(task.getDescription());
+        tasks.put(id, currentTask);
+        saveTasks(tasks);
+        return Optional.of(currentTask);
     }
 
     private void saveTasks(Map<String, Task> tasks) {

@@ -1,6 +1,7 @@
 package com.example.taskmanager.controllers;
 
 import com.example.taskmanager.dto.CreateTaskRequest;
+import com.example.taskmanager.dto.UpdateTaskRequest;
 import com.example.taskmanager.entities.Task;
 import com.example.taskmanager.repositories.TaskRepository;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class TasksController {
@@ -33,5 +35,23 @@ public class TasksController {
     ) {
         Task createdTask = taskRepository.addNewTask(request.getDescription());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
+    }
+
+    @DeleteMapping("/tasks/{id}")
+    public ResponseEntity<Object> deleteTask(@PathVariable String id) {
+        boolean response = taskRepository.deleteById(id);
+        if(!response) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/tasks/{id}")
+    public ResponseEntity<Object> updateTask(@PathVariable String id, @RequestBody UpdateTaskRequest request) {
+        Optional<Task> updated = taskRepository.updateTaskById(id, request);
+        if(updated.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updated);
     }
 }
