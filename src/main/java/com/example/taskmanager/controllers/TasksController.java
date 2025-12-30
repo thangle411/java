@@ -24,9 +24,9 @@ public class TasksController {
 
     @GetMapping("/tasks")
     public Map<String, Task> getTasks(
-            @RequestParam TaskStatus status, @RequestParam
-            ) {
-        return taskRepository.getTasks();
+            @RequestParam(required = false) TaskStatus status, @RequestParam(required = false) Integer progress
+    ) {
+        return taskRepository.getTasks(status, progress);
     }
 
     @GetMapping("/tasks/{id}")

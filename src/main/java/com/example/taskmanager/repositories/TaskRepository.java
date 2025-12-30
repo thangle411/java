@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.example.taskmanager.dto.UpdateTaskRequest;
 import com.example.taskmanager.dto.UpdateTaskStatusRequest;
@@ -27,6 +28,7 @@ public class TaskRepository {
     private final ObjectMapper objectMapper;
     private final Path filePath = Path.of("data.json");
     private Map<String, Task> tasksCache = new HashMap<String, Task>();
+    private Map<String, Task> tasks;
 
     public TaskRepository(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -49,7 +51,7 @@ public class TaskRepository {
         }
     }
 
-    public Map<String, Task> getTasks() {
+    public Map<String, Task> getTasks(TaskStatus status, Integer progress) {
         this.ensureFileExists();
 
         try {
@@ -64,7 +66,16 @@ public class TaskRepository {
 
             Map<String, Task> tasks = objectMapper.readValue(json, new TypeReference<Map<String, Task>>() {});
             tasksCache = tasks;
-            return tasks;
+
+            Map<String, Task> filteredTasks = tasks.entrySet().stream()
+                    .filter(e -> status == null || e.getValue().getStatus() == status)
+                    .filter(e -> progress == null || e.getValue().getProgress() <= progress)
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue
+                    ));
+
+            return filteredTasks;
         } catch (IOException e) {
             throw new IllegalStateException(
                     "Failed to read tasks from " + filePath,
@@ -75,7 +86,7 @@ public class TaskRepository {
 
     public Optional<Task> getTaskWithId(String id) {
         if(tasksCache.isEmpty()) {
-            tasksCache.putAll(this.getTasks());
+            tasksCache.putAll(this.getTasks(null,null));
         }
 
         Task task = this.tasksCache.get(id);
@@ -88,7 +99,7 @@ public class TaskRepository {
     }
 
     public Task addNewTask(String description) {
-        Map<String, Task> tasks = getTasks();
+        Map<String, Task> tasks = getTasks(null, null);
         String nextId = getNextId(tasks);
         String now = Instant.now().toString();
         Task newTask = new Task(nextId, description, TaskStatus.NOT_STARTED, now , "", 0);
@@ -98,7 +109,7 @@ public class TaskRepository {
     }
 
     public boolean deleteById(String id) {
-        Map<String, Task> tasks = getTasks();
+        Map<String, Task> tasks = getTasks(null,null);
         if(!tasks.containsKey(id)) {
             return false;
         }
@@ -108,7 +119,7 @@ public class TaskRepository {
     }
 
     public Optional<Task> updateTaskDetailsById(String id, UpdateTaskRequest task) {
-        Map<String, Task> tasks = getTasks();
+        Map<String, Task> tasks = getTasks(null, null);
         Task currentTask = tasks.get(id);
 
         if(currentTask == null) {
@@ -123,7 +134,7 @@ public class TaskRepository {
     }
 
     public Optional<Task> updateTaskStatusById(String id, UpdateTaskStatusRequest task) {
-        Map<String, Task> tasks = getTasks();
+        Map<String, Task> tasks = getTasks(null, null);
         Task currentTask = tasks.get(id);
 
         if(currentTask == null) {
