@@ -2,7 +2,9 @@ package com.example.taskmanager.controllers;
 
 import com.example.taskmanager.dto.CreateTaskRequest;
 import com.example.taskmanager.dto.UpdateTaskRequest;
+import com.example.taskmanager.dto.UpdateTaskStatusRequest;
 import com.example.taskmanager.entities.Task;
+import com.example.taskmanager.entities.TaskStatus;
 import com.example.taskmanager.repositories.TaskRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,12 +23,14 @@ public class TasksController {
     }
 
     @GetMapping("/tasks")
-    public Map<String, Task> getTasks() {
+    public Map<String, Task> getTasks(
+            @RequestParam TaskStatus status, @RequestParam
+            ) {
         return taskRepository.getTasks();
     }
 
     @GetMapping("/tasks/{id}")
-    public ResponseEntity<Task> getTaskWithId(@PathVariable String id) {
+    public Optional<Task> getTaskWithId(@PathVariable String id) {
         return taskRepository.getTaskWithId(id);
     }
 
@@ -49,7 +53,13 @@ public class TasksController {
 
     @PutMapping("/tasks/{id}")
     public ResponseEntity<Object> updateTask(@PathVariable String id, @Valid @RequestBody UpdateTaskRequest request) {
-        Optional<Task> updated = taskRepository.updateTaskById(id, request);
+        Optional<Task> updated = taskRepository.updateTaskDetailsById(id, request);
+        return updated.<ResponseEntity<Object>>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/tasks/{id}/status")
+    public ResponseEntity<Object> updateTaskStatus(@PathVariable String id, @Valid @RequestBody UpdateTaskStatusRequest request) {
+        Optional<Task> updated = taskRepository.updateTaskStatusById(id, request);
         return updated.<ResponseEntity<Object>>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

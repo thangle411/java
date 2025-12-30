@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.example.taskmanager.dto.UpdateTaskRequest;
+import com.example.taskmanager.dto.UpdateTaskStatusRequest;
 import com.example.taskmanager.entities.Task;
+import com.example.taskmanager.entities.TaskStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +73,7 @@ public class TaskRepository {
         }
     }
 
-    public ResponseEntity<Object> getTaskWithId(String id) {
+    public Optional<Task> getTaskWithId(String id) {
         if(tasksCache.isEmpty()) {
             tasksCache.putAll(this.getTasks());
         }
@@ -79,17 +81,17 @@ public class TaskRepository {
         Task task = this.tasksCache.get(id);
 
         if(task == null) {
-            return ResponseEntity.notFound().build();
+            return Optional.empty();
         }
 
-        return ResponseEntity.ok(task);
+        return Optional.of(task);
     }
 
     public Task addNewTask(String description) {
         Map<String, Task> tasks = getTasks();
         String nextId = getNextId(tasks);
         String now = Instant.now().toString();
-        Task newTask = new Task(nextId, description, "not-started", now , "");
+        Task newTask = new Task(nextId, description, TaskStatus.NOT_STARTED, now , "", 0);
         tasks.put(nextId, newTask);
         saveTasks(tasks);
         return newTask;
@@ -105,7 +107,7 @@ public class TaskRepository {
         return true;
     }
 
-    public Optional<Task> updateTaskById(String id, UpdateTaskRequest task) {
+    public Optional<Task> updateTaskDetailsById(String id, UpdateTaskRequest task) {
         Map<String, Task> tasks = getTasks();
         Task currentTask = tasks.get(id);
 
@@ -113,7 +115,29 @@ public class TaskRepository {
             return Optional.empty();
         }
         currentTask.setDescription(task.getDescription());
+        currentTask.setProgress(task.getProgress());
+        currentTask.setUpdatedAt();
         tasks.put(id, currentTask);
+        saveTasks(tasks);
+        return Optional.of(currentTask);
+    }
+
+    public Optional<Task> updateTaskStatusById(String id, UpdateTaskStatusRequest task) {
+        Map<String, Task> tasks = getTasks();
+        Task currentTask = tasks.get(id);
+
+        if(currentTask == null) {
+            return Optional.empty();
+        }
+
+        switch (task.getStatus()) {
+            case TaskStatus.NOT_STARTED -> currentTask.markAsNotStarted();
+            case TaskStatus.IN_PROGRESS -> currentTask.markAsInProgress();
+            case TaskStatus.DONE -> currentTask.markAsDone();
+            case TaskStatus.CANCELLED -> currentTask.markAsCancelled();
+        }
+
+        currentTask.setUpdatedAt();
         saveTasks(tasks);
         return Optional.of(currentTask);
     }

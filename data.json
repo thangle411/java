@@ -2,22 +2,41 @@
   "1" : {
     "id" : "1",
     "description" : "test",
-    "status" : "done",
+    "status" : "DONE",
     "createdAt" : "",
-    "updatedAt" : ""
+    "updatedAt" : "",
+    "progress" : 100
   },
   "2" : {
     "id" : "2",
-    "description" : "test",
-    "status" : "done",
+    "description" : "test 2",
+    "status" : "DONE",
     "createdAt" : "",
-    "updatedAt" : ""
+    "updatedAt" : "",
+    "progress" : 100
   },
   "3" : {
     "id" : "3",
-    "description" : "this is working",
-    "status" : "not-started",
+    "description" : "nother test",
+    "status" : "IN_PROGRESS",
     "createdAt" : "2025-12-29T08:14:27.695734300Z",
-    "updatedAt" : ""
+    "updatedAt" : "2025-12-29T21:11:04.291338900Z",
+    "progress" : 25
+  },
+  "4" : {
+    "id" : "4",
+    "description" : "test #4",
+    "status" : "NOT_STARTED",
+    "createdAt" : "2025-12-29T20:19:51.423331700Z",
+    "updatedAt" : "",
+    "progress" : 10
+  },
+  "5" : {
+    "id" : "5",
+    "description" : "test #5",
+    "status" : "NOT_STARTED",
+    "createdAt" : "2025-12-29T20:39:55.455682900Z",
+    "updatedAt" : "",
+    "progress" : 0
   }
 }
